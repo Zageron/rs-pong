@@ -47,8 +47,8 @@ impl Wall {
         // the length, and the orientation.
         let len = length / 2.0;
 
-        let a_x = orientation.sin() * len;
-        let a_y = orientation.cos() * len;
+        let a_x = orientation.sin().round_to(1000) * len;
+        let a_y = orientation.cos().round_to(1000) * len;
 
         let opposite_angle: f64 =
             (orientation + std::f64::consts::PI) % (2.0 * std::f64::consts::PI);
