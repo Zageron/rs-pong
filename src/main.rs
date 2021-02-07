@@ -56,8 +56,8 @@ impl Wall {
         let b_x = opposite_angle.sin().round_to(1000) * len;
         let b_y = opposite_angle.cos().round_to(1000) * len;
 
-        let point_a: DVec2 = DVec2::new(a_x, a_y);
-        let point_b: DVec2 = DVec2::new(b_x, b_y);
+        let point_a: DVec2 = DVec2::new(a_x + x, a_y + y);
+        let point_b: DVec2 = DVec2::new(b_x + x, b_y + y);
 
         Wall { point_a, point_b }
     }
