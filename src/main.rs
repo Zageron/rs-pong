@@ -1,18 +1,82 @@
+use std::{fmt, io};
+
+use ultraviolet::DVec2;
+
+struct Ball {
+    position: DVec2,
+    velocity: DVec2,
+}
+
+struct Wall {
+    point_a: DVec2,
+    point_b: DVec2,
+}
+
+trait RoundToPlace {
+    fn round_to(&self, place: u64) -> f64;
+}
+
+impl RoundToPlace for f64 {
+    fn round_to(&self, place: u64) -> f64 {
+        (self * place as f64).round() / place as f64
+    }
+}
+
+// Wall consists of two points, a point a and a point b.
+// Should we define a wall as a point, a length, and an orientation?
+
+impl Wall {
+    pub fn new(x: f64, y: f64, length: f64, orientation: f64) -> Wall {
+        // Calculate point a and b of the wall by taking the origin,
+        // the length, and the orientation.
+        let len = length / 2.0;
+
+        let a_x = orientation.sin() * len;
+        let a_y = orientation.cos() * len;
+
+        let opposite_angle: f64 =
+            (orientation + std::f64::consts::PI) % (2.0 * std::f64::consts::PI);
+
+        let b_x = opposite_angle.sin().round_to(1000) * len;
+        let b_y = opposite_angle.cos().round_to(1000) * len;
+
+        let point_a: DVec2 = DVec2::new(a_x, a_y);
+        let point_b: DVec2 = DVec2::new(b_x, b_y);
+
+        Wall { point_a, point_b }
+    }
+}
+
+impl fmt::Display for Wall {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({:?}, {:?})", self.point_a, self.point_b)
+    }
+}
+struct Field {
+    walls: [Wall; 4],
+}
+
+// impl Field {
+//     pub fn new(width: u32, height: u32) => Field {
+//         let wall0 =
+//     }
+// }
+
+fn parse_input() -> String {
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input).expect("Failed");
+    input
+}
+
 fn main() {
-    const PLAY_FIELD_BLOCKS_HORIZONTAL: u16 = 32;
-    const PLAY_FIELD_BLOCKS_VERTICAL: u16 = 32;
-    const RESOLUTION_WIDTH: u16 = 640;
-    const RESOLUTION_HEIGHT: u16 = 640;
-    const BLOCK_WIDTH: u16 = RESOLUTION_WIDTH / PLAY_FIELD_BLOCKS_HORIZONTAL;
-    const BLOCK_HEIGHT: u16 = RESOLUTION_HEIGHT / PLAY_FIELD_BLOCKS_VERTICAL;
+    let wall = Wall::new(0.0, 0.0, 10.0, 0.0);
+    println!("{}", wall);
 
-    println!(
-        "Block Width: {} | Block Height: {}",
-        BLOCK_WIDTH, BLOCK_HEIGHT
-    );
-
-    ball_spawned_log(0, 0, 0., 0.);
-    ball_bounced_log(0, 0, 0., 0.);
+    loop {
+        println!("Example output for user to see for now: ");
+        let n = parse_input().trim().parse::<u32>().unwrap();
+        println!("{}", n);
+    }
 }
 
 fn ball_spawned_log(point_x: u8, point_y: u8, vector_x: f32, vector_y: f32) {
