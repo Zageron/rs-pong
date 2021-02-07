@@ -17,6 +17,12 @@ struct Ball {
     velocity: DVec2,
 }
 
+impl Ball {
+    fn new(position: DVec2, velocity: DVec2) -> Self {
+        Self { position, velocity }
+    }
+}
+
 struct Wall {
     point_a: DVec2,
     point_b: DVec2,
