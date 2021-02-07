@@ -2,6 +2,16 @@ use std::fmt;
 
 use ultraviolet::DVec2;
 
+struct Field {
+    walls: [Wall; 4],
+}
+
+// impl Field {
+//     pub fn new(width: u32, height: u32) => Field {
+//         let wall0 =
+//     }
+// }
+
 struct Ball {
     position: DVec2,
     velocity: DVec2,
@@ -52,15 +62,6 @@ impl fmt::Display for Wall {
         write!(f, "({:?}, {:?})", self.point_a, self.point_b)
     }
 }
-struct Field {
-    walls: [Wall; 4],
-}
-
-// impl Field {
-//     pub fn new(width: u32, height: u32) => Field {
-//         let wall0 =
-//     }
-// }
 
 fn parse_input() -> String {
     let mut input = String::new();
