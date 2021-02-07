@@ -86,16 +86,4 @@ fn main() {
     }
 }
 
-fn ball_spawned_log(point_x: u8, point_y: u8, vector_x: f32, vector_y: f32) {
-    println!(
-        "The ball has spawned at [{},{}], with a new vector of [{},{}].",
-        point_x, point_y, vector_x, vector_y
-    );
-}
-
-fn ball_bounced_log(point_x: u8, point_y: u8, vector_x: f32, vector_y: f32) {
-    println!(
-        "The ball has bounced off of the wall at [{},{}], with a new vector of [{},{}].",
-        point_x, point_y, vector_x, vector_y
-    );
 }
