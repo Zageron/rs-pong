@@ -86,4 +86,25 @@ fn main() {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use crate::Wall;
+    use ultraviolet::DVec2;
+
+    #[test]
+    fn create_wall_from_point_length_and_orientation() {
+        // Horizontal Line
+        {
+            let wall: Wall = Wall::new(0.0, 0.0, 1.0, 0.0);
+            assert_eq!(wall.point_a, DVec2 { x: 0., y: 0.5 });
+            assert_eq!(wall.point_b, DVec2 { x: 0., y: -0.5 });
+        }
+
+        // Vertical Line
+        {
+            let wall: Wall = Wall::new(0.0, 0.0, 1.0, std::f64::consts::PI / 2.0);
+            assert_eq!(wall.point_a, DVec2 { x: 0.5, y: 0.0 });
+            assert_eq!(wall.point_b, DVec2 { x: -0.5, y: 0.0 });
+        }
+    }
 }
