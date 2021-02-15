@@ -1,5 +1,10 @@
 use std::fmt;
 
+use crossterm::{
+    event::{self, Event, KeyCode, KeyEvent},
+    terminal, Result,
+};
+
 use ultraviolet::DVec2;
 
 struct Field {
@@ -90,6 +95,18 @@ fn parse_input() -> String {
     input
 }
 
+pub fn read_char() -> Result<char> {
+    loop {
+        if let Ok(Event::Key(KeyEvent {
+            code: KeyCode::Char(c),
+            ..
+        })) = event::read()
+        {
+            return Ok(c);
+        }
+    }
+}
+
 fn perpendicular(vector: DVec2) -> DVec2 {
     DVec2 {
         x: -vector.y,
@@ -116,17 +133,23 @@ fn line_intersection(pt0a: DVec2, pt0b: DVec2, pt1a: DVec2, pt1b: DVec2) -> DVec
     ((numerator / denominator) * delta_pt_1) + pt1a
 }
 
-fn main() {
+fn main() -> Result<()> {
     let wall0: Wall = Wall::new(0.0, 0.0, 6.0, 0.0);
     let wall1: Wall = Wall::new(0.0, 0.0, 6.0, 90.0);
     println!("{}", wall0);
     println!("{}", wall1);
 
+    terminal::enable_raw_mode()?;
+
     loop {
-        println!("Example output for user to see for now: ");
-        let n = parse_input().trim().parse::<u32>().unwrap();
-        println!("{}", n);
+        match read_char()? {
+            '1' => println!("Hehe"),
+            'q' => break,
+            _ => {}
+        };
     }
+
+    terminal::disable_raw_mode()
 }
 
 #[cfg(test)]
