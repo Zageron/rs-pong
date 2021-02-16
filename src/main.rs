@@ -17,14 +17,45 @@ struct Field {
 //     }
 // }
 
+struct Game {
+    ball: Ball,
+}
+
+impl Game {
+    pub fn new() -> Self {
+        Self {
+            ball: Ball::new(DVec2 { x: 0.0, y: 0.0 }, DVec2 { x: 0.5, y: 0.7 }, 5),
+        }
+    }
+
+    pub fn tick(&mut self) {
+        self.ball.tick += 1;
+    }
+}
+
 struct Ball {
-    position: DVec2,
-    velocity: DVec2,
+    start_position: DVec2,
+    end_position: DVec2,
+    tick: u8,
+    rate: u8,
 }
 
 impl Ball {
-    fn new(position: DVec2, velocity: DVec2) -> Self {
-        Self { position, velocity }
+    pub fn new(position: DVec2, end_position: DVec2, rate: u8) -> Self {
+        Self {
+            start_position: position,
+            end_position,
+            tick: 0,
+            rate,
+        }
+    }
+
+    pub fn direction(&self) -> DVec2 {
+        (self.end_position - self.start_position).normalized()
+    }
+
+    pub fn is_moving(&self) -> bool {
+        self.tick < self.rate
     }
 }
 
@@ -133,17 +164,31 @@ fn line_intersection(pt0a: DVec2, pt0b: DVec2, pt1a: DVec2, pt1b: DVec2) -> DVec
     ((numerator / denominator) * delta_pt_1) + pt1a
 }
 
+fn tick(game_state: &mut Game) {
+    let ball: &Ball = &game_state.ball;
+
+    if ball.is_moving() {
+        // Test for interactions with the walls.
+        // Mirror the direction of the ball if an interaction is found.
+    }
+
+    game_state.tick();
+}
+
 fn main() -> Result<()> {
     let wall0: Wall = Wall::new(0.0, 0.0, 6.0, 0.0);
     let wall1: Wall = Wall::new(0.0, 0.0, 6.0, 90.0);
     println!("{}", wall0);
     println!("{}", wall1);
 
+    let mut game_state: Game = Game::new();
+
     terminal::enable_raw_mode()?;
 
     loop {
         match read_char()? {
             '1' => println!("Hehe"),
+            '2' => tick(&mut game_state),
             'q' => break,
             _ => {}
         };
