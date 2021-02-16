@@ -9,8 +9,8 @@ publish = false
 
 [dependencies]
 crossterm = "0.19"
-tui = { version = "0.14.0", features = ["crossterm"], default-features = false }
-ultraviolet = { version = "0.7.5", features = ["f64"] }
+tui = { branch = "master", git = "https://github.com/fdehau/tui-rs", features = ["crossterm"], default-features = false }
+ultraviolet = { branch ="master", git = "https://github.com/termhn/ultraviolet", features = ["f64"] }
 
 [profile.dev.package."*"]
 opt-level = 2
