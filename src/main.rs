@@ -64,6 +64,12 @@ struct Wall {
     point_b: DVec2,
 }
 
+impl Wall {
+    pub fn normal(&self) -> DVec2 {
+        perpendicular(self.point_b - self.point_a)
+    }
+}
+
 trait RoundToPlace {
     fn round_to(&self, place: u64) -> f64;
 }
@@ -197,11 +203,31 @@ fn main() -> Result<()> {
     terminal::disable_raw_mode()
 }
 
+fn reflect_vector(direction: DVec2, normal: DVec2) -> DVec2 {
+    -2.0 * direction.dot(normal) * normal + direction
+}
+
+fn reflect_off_of_wall(ball: &mut Ball, wall: Wall) -> DVec2 {
+    let direction = ball.direction();
+    let wall_normal = wall.normal();
+    reflect_vector(direction, wall_normal)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::Validity;
-    use crate::{line_intersection, Wall};
+    use crate::{line_intersection, reflect_vector, Validity, Wall};
     use ultraviolet::DVec2;
+
+    #[test]
+    fn test_reflect_off_of_wall() {
+        let direction_45_degrees: DVec2 = DVec2::new(1.0, 1.0);
+        let wall: Wall = Wall::new(0.0, 0.0, 1.0, 0.0);
+        let new_direction: DVec2 = reflect_vector(direction_45_degrees, wall.normal());
+        assert_eq!(new_direction, DVec2 { x: -1.0, y: 1.0 });
+    }
+
+    #[test]
+    fn test_interpolation_to_wall() {}
 
     #[test]
     fn test_line_intersection_success() {
