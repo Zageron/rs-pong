@@ -5,7 +5,7 @@ use crossterm::{
     terminal, Result,
 };
 
-use ultraviolet::DVec2;
+use ultraviolet::{DVec2, DVec3};
 
 struct Field {
     walls: [Wall; 4],
@@ -33,11 +33,37 @@ impl Game {
     }
 }
 
+trait Interpolation {
+    fn get_destination_position(position: &'static DVec2, angle: &'static f32) -> DVec2
+    where
+        Self: Sized;
+
+    fn get_destination_normal(position: &'static DVec2, angle: &'static f32) -> DVec2
+    where
+        Self: Sized;
+}
+
 struct Ball {
     start_position: DVec2,
     end_position: DVec2,
     tick: u8,
     rate: u8,
+}
+
+impl Interpolation for Ball {
+    fn get_destination_position(position: &'static DVec2, angle: &'static f32) -> DVec2
+    where
+        Self: Sized,
+    {
+        DVec2::new(0.0, 0.0)
+    }
+
+    fn get_destination_normal(position: &'static DVec2, angle: &'static f32) -> DVec2
+    where
+        Self: Sized,
+    {
+        DVec2::new(0.0, 0.0)
+    }
 }
 
 impl Ball {
@@ -80,18 +106,23 @@ impl RoundToPlace for f64 {
     }
 }
 
+trait Invalid {}
+
+impl Invalid for DVec2 {}
+
 trait Validity {
+    const INVALID: DVec2;
     fn is_valid(&self) -> bool;
 }
 
 impl Validity for DVec2 {
-    fn is_valid(&self) -> bool {
-        const INVALID_DVEC2: DVec2 = DVec2 {
-            x: f64::MAX,
-            y: f64::MAX,
-        };
+    const INVALID: DVec2 = DVec2 {
+        x: f64::MAX,
+        y: f64::MAX,
+    };
 
-        !INVALID_DVEC2.eq(self)
+    fn is_valid(&self) -> bool {
+        !DVec2::INVALID.eq(self)
     }
 }
 
@@ -156,15 +187,14 @@ fn line_intersection(pt0a: DVec2, pt0b: DVec2, pt1a: DVec2, pt1b: DVec2) -> DVec
     let delta_pt_1: DVec2 = pt1b - pt1a;
     let delta_pt_a: DVec2 = pt0a - pt1a;
 
+    let bounds = pt0a.x <= pt1b.x && pt0b.x >= pt1a.x && pt0a.y <= pt1a.y && pt0b.y >= pt1b.y;
+
     let perpendicular_delta_pt_0: DVec2 = perpendicular(delta_pt_0);
     let denominator = perpendicular_delta_pt_0.dot(delta_pt_1);
     let numerator = perpendicular_delta_pt_0.dot(delta_pt_a);
 
-    if denominator == 0.0 || numerator == 0.0 {
-        return DVec2 {
-            x: f64::MAX,
-            y: f64::MAX,
-        };
+    if denominator == 0.0 || numerator == 0.0 || !bounds {
+        return DVec2::INVALID;
     }
 
     ((numerator / denominator) * delta_pt_1) + pt1a
@@ -216,7 +246,83 @@ fn reflect_off_of_wall(ball: &mut Ball, wall: Wall) -> DVec2 {
 #[cfg(test)]
 mod tests {
     use crate::{line_intersection, reflect_vector, Validity, Wall};
-    use ultraviolet::DVec2;
+    use ultraviolet::{DRotor2, DVec2};
+
+    #[test]
+    fn rotate_ball_trajectory() {
+        let ball_direction: f64 = (45.0_f64).to_radians();
+        let ball_rotor: DRotor2 = DRotor2::from_angle(ball_direction);
+
+        let mut ball_trajectory: DVec2 = DVec2::unit_x();
+        ball_trajectory.rotate_by(ball_rotor);
+
+        let expect_1: f64 = ball_trajectory.x / ball_trajectory.y; // 1 means it's 45 degrees.
+        assert!((expect_1 - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn four_corners_get_destination() {
+        // Given 4 verticies
+        let corners: [DVec2; 4] = [
+            DVec2::new(-1.0, -1.0),
+            DVec2::new(-1.0, 1.0),
+            DVec2::new(1.0, 1.0),
+            DVec2::new(1.0, -1.0),
+        ];
+
+        let walls: &[usize] = &[0, 1, 2, 3, 0];
+
+        // Given 1 ball position vertex
+        let ball_position: DVec2 = DVec2::new(0.0, 0.0);
+
+        // Given 1 ball direction angle
+        let ball_direction: f64 = 30.0_f64.to_radians();
+
+        // Given the maximum length of a line
+        let max_line_length: f64 = 2.0;
+
+        // Create the direction vector from the ball angle.
+        let ball_rotor: DRotor2 = DRotor2::from_angle(ball_direction);
+        let mut ball_trajectory: DVec2 = DVec2::unit_x();
+        ball_trajectory.rotate_by(ball_rotor);
+
+        // Calculate the line from the given ball position vertex and ball direction angle.
+        // Start position
+        let ball_vector: DVec2 = ball_trajectory.normalized() * max_line_length;
+
+        let mut end_point: DVec2 = DVec2::INVALID;
+        for first in &walls[0..walls.len() - 1] {
+            let wall_pt0: DVec2 = corners[*first];
+            let wall_pt1: DVec2 = corners[(first + 1) % corners.len()];
+            end_point = line_intersection(ball_position, ball_vector, wall_pt0, wall_pt1);
+            if end_point.is_valid() {
+                break;
+            }
+        }
+
+        // Find the end position of the line.
+        assert_eq!(
+            end_point,
+            DVec2 {
+                x: 1.0,
+                y: 0.5773502691896257
+            }
+        );
+    }
+
+    // So we have 4 verts representing the walls of the field.
+    // These four points, in sets of two, make up 4 walls.
+    // The "ball", is not simulated using physics so actually "colliding" with a wall is not necessary.
+
+    // The "reflection" or "granting a ball a movement" occurs like this:
+    // - Ball enters a "I am moving now" state.
+    // This begins with a direction and a velocity.
+    // An interpolation must start here, but before we can interpolate we should guarantee that ther is a reflection.
+    // 1) The ball should always be bouncing at a some angle. The angle shall not be 0 or 90.
+    //  It probably makes sense to make this angle clamped at an angle like 30 degrees, or to clamp it between
+    //  30 and 45.
+    // 2) The ball should determine which normal it will be reflecting at at this calculation time.
+    // 3) At the end of the interpolation step, a new calculation is made. (Go back to step 1.)
 
     #[test]
     fn test_reflect_off_of_wall() {
@@ -232,12 +338,18 @@ mod tests {
     #[test]
     fn test_line_intersection_success() {
         let pt0a: DVec2 = DVec2::new(0.0, 0.0);
-        let pt0b: DVec2 = DVec2::new(6.0, 6.0);
-        let pt1a: DVec2 = DVec2::new(0.0, 6.0);
-        let pt1b: DVec2 = DVec2::new(6.0, 0.0);
+        let pt0b: DVec2 = DVec2::new(1.7320508075688774, 1.0);
+        let pt1a: DVec2 = DVec2::new(1.0, 1.0);
+        let pt1b: DVec2 = DVec2::new(1.0, -1.0);
 
         let intersection_pt = line_intersection(pt0a, pt0b, pt1a, pt1b);
-        assert_eq!(intersection_pt, DVec2 { x: 3.0, y: 3.0 })
+        assert_eq!(
+            intersection_pt,
+            DVec2 {
+                x: 1.0,
+                y: 0.5773502691896257
+            }
+        )
     }
 
     #[test]
