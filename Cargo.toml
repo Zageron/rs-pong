@@ -8,9 +8,12 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-crossterm = "*"
-tui = { git = "https://github.com/fdehau/tui-rs", features = ["crossterm"], default-features = false }
-ultraviolet = { git = "https://github.com/termhn/ultraviolet", features = ["f64"] }
+bytemuck = { version = "1", features = ["derive"] }
+crossterm = "0.19"
+tobj = "2"
+tui = { version = "0.14", features = ["crossterm"], default-features = false }
+ultraviolet = { version = "0.8", features = ["f64"] }
+wgpu = "0.7"
 
 [profile.dev.package."*"]
 opt-level = 2
