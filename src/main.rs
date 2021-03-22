@@ -5,7 +5,10 @@ use crossterm::{
     terminal, Result,
 };
 
-use ultraviolet::{DVec2, DVec3};
+use ultraviolet::DVec2;
+
+mod model;
+mod render;
 
 struct Field {
     walls: [Wall; 4],
@@ -17,19 +20,53 @@ struct Field {
 //     }
 // }
 
-struct Game {
-    ball: Ball,
+enum PlayerId {
+    PlayerOne,
+    PlayerTwo,
+    None,
 }
 
-impl Game {
+struct GameRules {
+    score_to_win: u8,
+}
+
+struct GameState {
+    ball: Ball,
+    player0_score: u8,
+    player1_score: u8,
+}
+
+impl GameState {
     pub fn new() -> Self {
         Self {
             ball: Ball::new(DVec2 { x: 0.0, y: 0.0 }, DVec2 { x: 0.5, y: 0.7 }, 5),
+            player0_score: 0,
+            player1_score: 0,
         }
     }
 
     pub fn tick(&mut self) {
         self.ball.tick += 1;
+    }
+
+    pub fn increment_score(&mut self, scorer: PlayerId) {
+        match scorer {
+            PlayerId::PlayerOne => self.player0_score += 1,
+            PlayerId::PlayerTwo => self.player1_score += 1,
+            PlayerId::None => {}
+        }
+    }
+}
+
+impl GameRules {
+    pub fn has_winner(&self, state: &GameState) -> PlayerId {
+        if state.player0_score >= self.score_to_win {
+            return PlayerId::PlayerOne;
+        } else if state.player1_score >= self.score_to_win {
+            return PlayerId::PlayerTwo;
+        } else {
+            return PlayerId::None;
+        }
     }
 }
 
@@ -200,7 +237,7 @@ fn line_intersection(pt0a: DVec2, pt0b: DVec2, pt1a: DVec2, pt1b: DVec2) -> DVec
     ((numerator / denominator) * delta_pt_1) + pt1a
 }
 
-fn tick(game_state: &mut Game) {
+fn tick(game_state: &mut GameState) {
     let ball: &Ball = &game_state.ball;
 
     if ball.is_moving() {
@@ -217,7 +254,7 @@ fn main() -> Result<()> {
     println!("{}", wall0);
     println!("{}", wall1);
 
-    let mut game_state: Game = Game::new();
+    let mut game_state: GameState = GameState::new();
 
     terminal::enable_raw_mode()?;
 
