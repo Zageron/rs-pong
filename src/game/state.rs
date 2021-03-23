@@ -1,6 +1,45 @@
+use std::fmt;
 use ultraviolet::DVec2;
 
-pub use super::types::{Ball, GameRules, GameState, PlayerId, Wall};
+pub struct Ball {
+    pub start_position: DVec2,
+    pub end_position: DVec2,
+    pub tick: u8,
+    pub rate: u8,
+}
+
+pub enum PlayerId {
+    PlayerOne,
+    PlayerTwo,
+    None,
+}
+
+pub struct GameRules {
+    pub score_to_win: u8,
+}
+
+pub enum TurnState {
+    PreTurn,
+    Turn,
+}
+
+pub struct GameState {
+    pub ball: Ball,
+    pub player0_score: u8,
+    pub player1_score: u8,
+    pub turn: u8,
+    pub state: TurnState,
+}
+
+impl fmt::Display for GameState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "(P1: {:?}, P2: {:?})",
+            self.player0_score, self.player1_score
+        )
+    }
+}
 
 impl GameState {
     pub fn new() -> Self {
@@ -8,6 +47,8 @@ impl GameState {
             ball: Ball::new(DVec2 { x: 0.0, y: 0.0 }, DVec2 { x: 0.5, y: 0.7 }, 5),
             player0_score: 0,
             player1_score: 0,
+            turn: 0,
+            state: TurnState::PreTurn,
         }
     }
 
@@ -81,9 +122,20 @@ impl Ball {
     }
 }
 
+pub struct Wall {
+    pub point_a: DVec2,
+    pub point_b: DVec2,
+}
+
 impl Wall {
     pub fn normal(&self) -> DVec2 {
         perpendicular(self.point_b - self.point_a)
+    }
+}
+
+impl fmt::Display for Wall {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({:?}, {:?})", self.point_a, self.point_b)
     }
 }
 
