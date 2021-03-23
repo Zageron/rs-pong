@@ -196,8 +196,7 @@ fn reflect_off_of_wall(ball: &mut Ball, wall: Wall) -> DVec2 {
 
 #[cfg(test)]
 mod tests {
-    use super::{line_intersection, reflect_vector, Validity};
-    use crate::Wall;
+    use super::{line_intersection, reflect_vector, Validity, Wall};
     use ultraviolet::{DRotor2, DVec2};
 
     #[test]
