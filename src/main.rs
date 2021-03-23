@@ -4,7 +4,7 @@ use crossterm::{
 };
 
 mod game;
-use game::state::{GameState, Wall};
+use game::state::GameState;
 mod model;
 mod render;
 
@@ -20,8 +20,35 @@ pub fn read_char() -> Result<char> {
     }
 }
 
-fn tick() {
-    println!("Arbitrary tick.");
+fn tick(state: &mut GameState) {
+    println!(" tick. {}", state);
+}
+
+fn tick_up(state: &mut GameState) {
+    print!("Paddle up, and ");
+    tick(state);
+}
+
+fn tick_down(state: &mut GameState) {
+    print!("Paddle down, and ");
+    tick(state);
+}
+
+fn main() -> Result<()> {
+    let mut game_state: GameState = GameState::new();
+
+    terminal::enable_raw_mode()?;
+
+    loop {
+        match read_char()? {
+            'w' => tick_up(&mut game_state),
+            's' => tick_down(&mut game_state),
+            'q' => break,
+            _ => {}
+        };
+    }
+
+    terminal::disable_raw_mode()
 }
 
 // Initialize app state control.
@@ -43,25 +70,3 @@ fn tick() {
 //  - Interception logic for paddles. (Reflection)
 //  - Interception logic for top and bottom walls. (Reflection)
 //  - Wait for interaction to fire the pong ball at turn start.
-
-fn main() -> Result<()> {
-    let wall0: Wall = Wall::new(0.0, 0.0, 6.0, 0.0);
-    let wall1: Wall = Wall::new(0.0, 0.0, 6.0, 90.0);
-    println!("{}", wall0);
-    println!("{}", wall1);
-
-    //let mut game_state: GameState = GameState::new();
-
-    terminal::enable_raw_mode()?;
-
-    loop {
-        match read_char()? {
-            '1' => println!("Hehe"),
-            '2' => tick(),
-            'q' => break,
-            _ => {}
-        };
-    }
-
-    terminal::disable_raw_mode()
-}
