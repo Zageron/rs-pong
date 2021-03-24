@@ -51,9 +51,16 @@ fn main() -> Result<()> {
     terminal::disable_raw_mode()
 }
 
+// Set up input control
+//  - Player 1: W S
+//  - Player 2: Up Dn
+//  - Escape (from playing): Pause
+//  - Escape (from serving): Nothing
+//  - Escape (from pause): Main Menu
+
 // Initialize app state control.
-//  - Pre-Game
-//  - Active game
+//  - Main Menu
+//  - Game
 //  - Post-Game
 
 // Initialize game state control.
@@ -62,7 +69,7 @@ fn main() -> Result<()> {
 //  - Ball position and initial direction vector. (Angle of bounce)
 //  - Ball "speed" setting.
 //  - Current Turn / Turn Counters
-//  - Game State: Turn Start vs Active
+//  - Game State: Serving, Playing, Paused
 
 // Set up game rules:
 //  - Boundaries for "turn end"
