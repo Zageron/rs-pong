@@ -13,7 +13,7 @@ crossterm = "0.19"
 tobj = "2"
 tui = { version = "0.14", features = ["crossterm"], default-features = false }
 ultraviolet = { version = "0.8", features = ["f64"] }
-wgpu = "0.7"
+wgpu = "0.7.1"
 
 [profile.dev.package."*"]
 opt-level = 2
